@@ -1,0 +1,23 @@
+{
+  "name": "opinizer_server",
+  "version": "0.1.0",
+  "description": "Backend for opinion gathering service Opinizer",
+  "main": "server.js",
+  "dependencies": {
+    "hapi": "^15.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jded/Opinizer_BE.git"
+  },
+  "author": "Jdedor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jded/Opinizer_BE/issues"
+  },
+  "homepage": "https://github.com/Jded/Opinizer_BE#readme"
+}
