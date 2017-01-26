@@ -2,6 +2,15 @@
 
 const controller = require('./item-template.controller.js');
 const Joi = require("joi");
+
+const field = Joi.object().keys({
+    field_name:Joi.string().required(),
+    field_type:Joi.number().required(),
+    item_field_id:Joi.string(),
+    item_template_id:Joi.string().required(),
+    creation_date:Joi.string()
+});
+
 module.exports = [
     {
         path :'/item-template',
@@ -26,9 +35,11 @@ module.exports = [
             validate: {
                 payload: {
                     template_name: Joi.string().min(2).max(128).required(),
-                    template_description: Joi.string().max(8192)
+                    template_description: Joi.string().max(8192),
+                    addFields:Joi.array().items(field)
                 }
             },
+            auth: false,
             handler: controller.saveTemplate
         }
     },
@@ -42,7 +53,9 @@ module.exports = [
                     template_description: Joi.string().max(8192),
                     user_id: Joi.number().integer().required(),
                     item_template_id: Joi.number().integer().required(),
-                    creation_date: Joi.string()
+                    creation_date: Joi.string(),
+                    addFields:Joi.array().items(field),
+                    removeFields:Joi.array().items(field)
                 }
             },
             handler: controller.updateTemplate
@@ -51,7 +64,9 @@ module.exports = [
     {
         path :'/item-template/{item_template_id}',
         method:'DELETE',
-        handler: controller.deleteTemplate
+        config:{
+            handler: controller.deleteTemplate
+        }
     }/*,
     {
         path :'/item-template/search',

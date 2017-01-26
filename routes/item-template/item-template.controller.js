@@ -25,9 +25,9 @@ module.exports = {
     },
     saveTemplate: function(request,reply){
         const service = new ItemTemplateDataService(request.pg.client);
-        let user = request.auth.credentials;
+        //let user = request.auth.credentials;
         let template = request.payload;
-        template.user_id = user.id;
+        template.user_id = 2;//user.id;
         service.store(template).then(function(result){
             reply(result);
         },function(error){
