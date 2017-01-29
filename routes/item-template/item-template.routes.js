@@ -36,7 +36,8 @@ module.exports = [
                 payload: {
                     template_name: Joi.string().min(2).max(128).required(),
                     template_description: Joi.string().max(8192),
-                    addFields:Joi.array().items(field)
+                    addFields:Joi.array().items(field),
+                    file_id:Joi.array().items(Joi.string())
                 }
             },
             auth: { mode: 'try' },
@@ -55,7 +56,8 @@ module.exports = [
                     item_template_id: Joi.number().integer().required(),
                     creation_date: Joi.string(),
                     addFields:Joi.array().items(field),
-                    removeFields:Joi.array().items(field)
+                    removeFields:Joi.array().items(field),
+                    file_id:Joi.array().items(Joi.string())
                 }
             },
             handler: controller.updateTemplate
