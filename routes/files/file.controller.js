@@ -52,5 +52,27 @@ module.exports = {
             reply(Boom.notFound("File does not exist"));
         })
     }
+    ,
+    getMyFiles:function(request,reply){
+        let dataService = new FileDataService(request.pg.client);
+        let user = request.auth.credentials;
+        dataService.getMyFiles(user.user_id).then(function(result){
+            reply(result);
+        },function(err){
+            reply(Boom.notFound("File does not exist"));
+        })
+    },
+    getAllFiles:function(request,reply){
+        let dataService = new FileDataService(request.pg.client);
+        let user = request.auth.credentials;
+        if(!user || !user.admin_privilege){
+            reply(Boom.unauthorized('Must be admin'));
+        }
+        dataService.getAllFiles().then(function(result){
+            reply(result);
+        },function(err){
+            reply(Boom.notFound("File does not exist"));
+        })
+    }
 
 }

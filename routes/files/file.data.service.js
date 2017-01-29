@@ -32,6 +32,24 @@ module.exports = class FileDataService{
         });
     }
 
+    getMyFiles(userId){
+        return new Promise((resolve,reject)=>{
+            this.client.query("SELECT * FROM opinizer.file WHERE user_id = '" +userId + "'", function (err, result) {
+                if (err) reject(err);
+                resolve(result.rows);
+            });
+        });
+    }
+
+    getAllFiles(){
+        return new Promise((resolve,reject)=>{
+            this.client.query("SELECT * FROM opinizer.file", function (err, result) {
+                if (err) reject(err);
+                resolve(result.rows);
+            });
+        });
+    }
+
     delete(fileId){
         return new Promise((resolve,reject)=>{
             function success(err, result) {

@@ -22,6 +22,20 @@ module.exports = [
         }
     },
     {
+        path :'/file/my',
+        method:'GET',
+        config:{
+            handler: controller.getMyFiles
+        }
+    },
+    {
+        path :'/file',
+        method:'GET',
+        config:{
+            handler: controller.getAllFiles
+        }
+    },
+    {
         path :'/file/{file_id}',
         method:'DELETE',
         config:{
