@@ -11,7 +11,7 @@ module.exports = class ItemDataService{
                 'INSERT into opinizer.item_instance (user_id, item_name, item_template_id, creation_date, file_id) VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4) RETURNING item_instance_id',
                 [itemInstance.user_id, itemInstance.item_name, itemInstance.item_template_id, itemInstance.file_id] , (err, result) => {
                     if (err) reject(err);
-                    const id = result.rows[0].item_template_id;
+                    const id = result.rows[0].item_instance_id;
                     this.addFields(itemInstance.addValues,id, resolve,reject);
                 });
         });
@@ -189,9 +189,6 @@ module.exports = class ItemDataService{
                 }
             }
             if(adminOverride){
-                this.client.query(
-                    'DELETE FROM opinizer.item_template WHERE item_template_id = $1',
-                    [itemTemplateId] , success);
                 this.client.query(
                     'DELETE FROM opinizer.item_template WHERE item_template_id = $1',
                     [itemTemplateId] , success);

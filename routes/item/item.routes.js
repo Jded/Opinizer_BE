@@ -1,6 +1,6 @@
 "use strict";
 
-const controller = require('./item-template.controller.js');
+const controller = require('./item.controller.js');
 const Joi = require("joi");
 
 const fieldValue = Joi.object().keys({
