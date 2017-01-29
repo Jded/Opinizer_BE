@@ -117,7 +117,7 @@ module.exports = class UserDataService{
 
     get(userId){
         return new Promise((resolve,reject)=>{
-            this.client.query("SELECT * FROM opinizer.user WHERE user_id = '" +userId + "'", function (err, result) {
+            this.client.query("SELECT * FROM opinizer.user LEFT_JOIN opinizer.file as file ON user.file_id = file.file_id WHERE user_id = '" +userId + "'", function (err, result) {
                 if (err) reject(err);
                 if(result.rows.length !== 1){
                     reject('not found');
@@ -129,10 +129,13 @@ module.exports = class UserDataService{
     }
 
     find(emailOrLogin,password){
-        let query = "UPDATE opinizer.user SET last_login = CURRENT_TIMESTAMP WHERE (email = $1 OR login = $1) AND password = crypt($2, password) RETURNING user_id, login first_name, last_name, email, admin_privilege, confirmed, registration_date";
+        let query = `with upd as (UPDATE opinizer.user SET last_login = CURRENT_TIMESTAMP WHERE (email = $1 OR login = $1) AND password = crypt($2, password) RETURNING *) 
+        SELECT upd.user_id, upd.login, upd.first_name, upd.last_name, upd.email, upd.admin_privilege, upd.confirmed, upd.registration_date, upd.file_id, file.address, file.filename
+        FROM upd LEFT JOIN opinizer.file as file ON upd.file_id = file.file_id`;
         //if(requireConfirmed){query = " AND confirmed = true";}
         return new Promise((resolve,reject)=>{
             this.client.query(query, [emailOrLogin,password],function (err, result) {
+                console.log(err)
                 if (err) reject(err);
                 if(result.rows.length !== 1){
                     reject('not found');
@@ -161,7 +164,7 @@ module.exports = class UserDataService{
 
     getAll(){
         return new Promise((resolve,reject)=>{
-            this.client.query('SELECT * FROM opinizer.user', function (err, result) {
+            this.client.query('SELECT * FROM opinizer.user LEFT_JOIN opinizer.file as file ON user.file_id = file.file_id ', function (err, result) {
                 if (err) reject(err);
                 resolve(result.rows);
             });

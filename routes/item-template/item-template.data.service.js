@@ -8,8 +8,8 @@ module.exports = class ItemTemplateDataService{
     store(itemTemplate){
         return new Promise((resolve,reject)=>{
             this.client.query(
-                'INSERT into opinizer.item_template (user_id, template_name, template_description, creation_date) VALUES($1, $2, $3, CURRENT_TIMESTAMP) RETURNING item_template_id',
-                [itemTemplate.user_id, itemTemplate.template_name, itemTemplate.template_description] , (err, result) => {
+                'INSERT into opinizer.item_template (user_id, template_name, template_description, creation_date, file_id) VALUES($1, $2, $3, CURRENT_TIMESTAMP, $4) RETURNING item_template_id',
+                [itemTemplate.user_id, itemTemplate.template_name, itemTemplate.template_description, itemTemplate.file_id] , (err, result) => {
                 if (err) reject(err);
                 const id = result.rows[0].item_template_id;
                 this.addFields(itemTemplate.addFields,id, resolve,reject);
@@ -43,7 +43,6 @@ module.exports = class ItemTemplateDataService{
         let numberDone = 0;
         for(let field of fields){
             this.client.query(prepared,[field.item_field_id, id],(err,result)=>{
-                console.log(err,result)
                 if(err)reject(err);
                 numberDone++;
                 if(numberDone == fields.length){
@@ -67,12 +66,12 @@ module.exports = class ItemTemplateDataService{
             }
             if(adminOverride){
                 this.client.query(
-                    'UPDATE opinizer.item_template SET template_name = $1, template_description = $2 WHERE item_template_id = $3',
-                    [itemTemplate.template_name, itemTemplate.template_description, itemTemplate.item_template_id] , success);
+                    'UPDATE opinizer.item_template SET template_name = $1, template_description = $2, file_id = $3 WHERE item_template_id = $4',
+                    [itemTemplate.template_name, itemTemplate.template_description, itemTemplate.file_id, itemTemplate.item_template_id] , success);
             }else{
                 this.client.query(
-                    'UPDATE opinizer.item_template SET template_name = $1, template_description = $2 WHERE item_template_id = $3 AND user_id = $4',
-                    [itemTemplate.template_name, itemTemplate.template_description, itemTemplate.item_template_id, itemTemplate.user_id] , success);
+                    'UPDATE opinizer.item_template SET template_name = $1, template_description = $2, file_id = $3 WHERE item_template_id = $4 AND user_id = $5',
+                    [itemTemplate.template_name, itemTemplate.template_description, itemTemplate.file_id, itemTemplate.item_template_id, itemTemplate.user_id] , success);
             }
 
         });
@@ -93,12 +92,32 @@ module.exports = class ItemTemplateDataService{
                 })
             }
         }
-        return properFields.reduce((target, key) => { target[key] = row[key]; return target; }, {fields:fields});
+        let files = [];
+        for(let i in row.file_id){
+            if(row.file_id[i] !== null){
+                files.push({
+                    file_id:row.file_id[i],
+                    filename:row.filenames[i],
+                    address:row.addresses[i],
+                    creation_date:row.file_dates[i]
+                })
+            }
+        }
+        return properFields.reduce((target, key) => { target[key] = row[key]; return target; }, {fields:fields, files:files});
     }
     
     get(itemTemplateId){
         return new Promise((resolve,reject)=>{
-            this.client.query("SELECT item_template.item_template_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates FROM opinizer.item_template AS item_template LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id WHERE item_template.item_template_id = '" +itemTemplateId + "' GROUP BY item_template.item_template_id", (err, result) => {
+            this.client.query(`SELECT
+                item_template.item_template_id, item_template.file_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, 
+                array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates, 
+                array_agg(file.filename) as filenames, array_agg(file.address) as addresses, array_agg(file.creation_date) as file_dates 
+                FROM opinizer.item_template AS item_template 
+                LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id 
+                LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id) 
+                WHERE item_template.item_template_id = '${itemTemplateId}' 
+                GROUP BY item_template.item_template_id`, (err, result) => {
+                console.log(result)
                 if (err) reject(err);
 
                 if(result.rows.length !== 1){
@@ -138,9 +157,17 @@ module.exports = class ItemTemplateDataService{
 
     getAll(){
         return new Promise((resolve,reject)=>{
-            this.client.query("SELECT item_template.item_template_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates FROM opinizer.item_template AS item_template LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id GROUP BY item_template.item_template_id", (err, result) => {
-                console.log(err)
+            this.client.query(`SELECT 
+                item_template.item_template_id, item_template.file_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, 
+                array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates, 
+                array_agg(file.filename) as filenames, array_agg(file.address) as addresses, array_agg(file.creation_date) as file_dates 
+                FROM opinizer.item_template AS item_template 
+                LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id
+                LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id)
+                GROUP BY item_template.item_template_id`, (err, result) => {
+                console.log(result)
                 if (err) reject(err);
+
                 resolve(result.rows.map((row)=>this.processReadFields(row)));
             });
         });

@@ -20,7 +20,8 @@ module.exports = {
         getValidatedUser(request)
             .then(function(user){
                 if (user) {
-                    let sid = require('crypto').createHash('md5').update(String(user.id)+ String(new Date().getTime())).digest("hex");
+                    request.cookieAuth.clear();
+                    let sid = require('crypto').createHash('md5').update(String(user.user_id)+ String(new Date().getTime())).digest("hex");
                     request.server.app.cache.set(sid, { account: user }, 0, (err) => {
                         if (err) {
                             reply(err);

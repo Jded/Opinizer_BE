@@ -25,9 +25,9 @@ module.exports = {
     },
     saveTemplate: function(request,reply){
         const service = new ItemTemplateDataService(request.pg.client);
-        //let user = request.auth.credentials;
+        let user = request.auth.credentials;
         let template = request.payload;
-        template.user_id = 2;//user.id;
+        template.user_id = parseInt(user.user_id);
         service.store(template).then(function(result){
             reply(result);
         },function(error){
@@ -42,7 +42,7 @@ module.exports = {
         if(parseInt(request.params.item_template_id) !== parseInt(newTemplate.item_template_id)){
             reply(Boom.badData("Id mismatch"));
         }
-        if(parseInt(newTemplate.user_id) != parseInt(user.id) && !isAdmin){
+        if(parseInt(newTemplate.user_id) != parseInt(user.user_id) && !isAdmin){
             reply(Boom.unauthorized("Only owner can update"));
         }
         service.update(newTemplate,isAdmin).then(function(result){
@@ -61,7 +61,7 @@ module.exports = {
         const service = new ItemTemplateDataService(request.pg.client);
         let user = request.auth.credentials;
         let isAdmin = user.admin_privilege;
-        service.delete(request.params.item_template_id,isAdmin,user.id).then(function(result){
+        service.delete(request.params.item_template_id,isAdmin,user.user_id).then(function(result){
             reply(result);
         },function(error){
             if(error === 'not found'){

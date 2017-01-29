@@ -8,6 +8,8 @@
     "hapi": "^15.2.0",
     "hapi-auth-cookie": "^6.1.1",
     "hapi-node-postgres": "^4.0.1",
+    "hapi-quickthumb": "^0.1.4",
+    "inert": "^4.1.0",
     "joi": "^10.1.0",
     "pg": "^6.1.2",
     "sha1": "^1.1.1"

@@ -17,14 +17,14 @@ module.exports = [
         method:'GET',
         config:{
             handler: controller.getTemplates,
-            auth: false
+            auth: { mode: 'try' },
         }
     },
     {
         path :'/item-template/{item_template_id}',
         method:'GET',
         config:{
-            auth: false,
+            auth: { mode: 'try' },
             handler: controller.getTemplate
         }
     },
@@ -39,7 +39,7 @@ module.exports = [
                     addFields:Joi.array().items(field)
                 }
             },
-            auth: false,
+            auth: { mode: 'try' },
             handler: controller.saveTemplate
         }
     },
