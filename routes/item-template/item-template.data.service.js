@@ -29,7 +29,7 @@ module.exports = class ItemTemplateDataService{
                 if(err)reject(err);
                 numberDone++;
                 if(numberDone == fields.length){
-                    resolve(id);
+                    resolve({item_template_id:id});
                 }
             })
         }
@@ -60,7 +60,7 @@ module.exports = class ItemTemplateDataService{
                     reject("not found")
                 } else{
                     this.removeFields(itemTemplate.removeFields, itemTemplate.item_template_id,reject,()=>{});
-                    this.addFields(itemTemplate.addFields, itemTemplate.item_template_id,reject, resolve);
+                    this.addFields(itemTemplate.addFields, itemTemplate.item_template_id,reject, ()=>{});
                     resolve(result.rowCount);
                 }
             }
@@ -79,10 +79,13 @@ module.exports = class ItemTemplateDataService{
     }
 
     processReadFields(row){
-        const properFields = ["item_template_id","user_id","template_name","creation_date"];
+        const properFields = ["item_template_id","user_id","template_name","template_description", "creation_date", "file_id"];
         let fields = [];
+        let field_map = {};
+
         for(let i in row.field_ids){
-            if(row.field_ids[i] !== null){
+            if(row.field_ids[i] !== null && !field_map[row.field_ids[i]]){
+                field_map[row.field_ids[i]] = true;
                 fields.push({
                     item_field_id:row.field_ids[i],
                     field_type:row.field_types[i],
@@ -93,8 +96,10 @@ module.exports = class ItemTemplateDataService{
             }
         }
         let files = [];
+        let file_map = {};
         for(let i in row.file_id){
-            if(row.file_id[i] !== null){
+            if(row.file_id[i] !== null && !file_map[row.file_id[i]]){
+                file_map[row.file_id[i]] = true;
                 files.push({
                     file_id:row.file_id[i],
                     filename:row.filenames[i],
@@ -103,6 +108,7 @@ module.exports = class ItemTemplateDataService{
                 })
             }
         }
+
         return properFields.reduce((target, key) => { target[key] = row[key]; return target; }, {fields:fields, files:files});
     }
     
@@ -117,9 +123,8 @@ module.exports = class ItemTemplateDataService{
                 LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id) 
                 WHERE item_template.item_template_id = '${itemTemplateId}' 
                 GROUP BY item_template.item_template_id`, (err, result) => {
-                console.log(result)
+                console.log(err)
                 if (err) reject(err);
-
                 if(result.rows.length !== 1){
                     reject('not found');
                 }else{
@@ -165,7 +170,44 @@ module.exports = class ItemTemplateDataService{
                 LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id
                 LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id)
                 GROUP BY item_template.item_template_id`, (err, result) => {
-                console.log(result)
+                if (err) reject(err);
+
+                resolve(result.rows.map((row)=>this.processReadFields(row)));
+            });
+        });
+    }
+    getRecent(number){
+        return new Promise((resolve,reject)=>{
+            this.client.query(`SELECT 
+                item_template.item_template_id, item_template.file_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, 
+                array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates, 
+                array_agg(file.filename) as filenames, array_agg(file.address) as addresses, array_agg(file.creation_date) as file_dates 
+                FROM opinizer.item_template AS item_template 
+                LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id
+                LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id)
+                GROUP BY item_template.item_template_id
+                ORDER BY item_template.creation_date DESC LIMIT ${number}
+                `, (err, result) => {
+                console.log(err)
+                if (err) reject(err);
+
+                resolve(result.rows.map((row)=>this.processReadFields(row)));
+            });
+        });
+    }
+    getUserTemplates(user_id){
+        return new Promise((resolve,reject)=>{
+            this.client.query(`SELECT 
+                item_template.item_template_id, item_template.file_id, item_template.user_id, item_template.template_name, item_template.template_description, item_template.creation_date, 
+                array_agg(item_field.item_field_id) AS field_ids,array_agg(item_field.field_type) AS field_types,array_agg(item_field.field_name) AS field_names,array_agg(item_field.creation_date) AS creation_dates, 
+                array_agg(file.filename) as filenames, array_agg(file.address) as addresses, array_agg(file.creation_date) as file_dates 
+                FROM opinizer.item_template AS item_template 
+                LEFT JOIN opinizer.item_field AS item_field ON item_field.item_template_id = item_template.item_template_id
+                LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_template.file_id)
+                WHERE item_template.user_id = '${user_id}' 
+                GROUP BY item_template.item_template_id
+                `, (err, result) => {
+                console.log(err)
                 if (err) reject(err);
 
                 resolve(result.rows.map((row)=>this.processReadFields(row)));

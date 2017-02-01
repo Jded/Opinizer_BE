@@ -44,11 +44,11 @@ module.exports = {
         let user = request.auth.credentials;
         let isAdmin = user.admin;
         let userData = request.payload;
-        if(parseInt(userData.user_id) != parseInt(user.id) && !isAdmin){
+        if(parseInt(userData.user_id) != parseInt(user.user_id) && !isAdmin){
             reply(Boom.unauthorized("Only admin can update another user"));
         }
         service.update(userData,isAdmin).then(function(result){
-            reply(result)
+            return reply(result);
         },function(error){
             if(error === "not found"){
                 reply(Boom.notFound("No item for updating"));
@@ -63,7 +63,7 @@ module.exports = {
         const service = new UserDataService(request.pg.client);
         let user = request.auth.credentials;
         let isAdmin = user.admin;
-        service.delete(request.params.item_template_id,isAdmin,user.id).then(function(result){
+        service.delete(request.params.item_template_id,isAdmin,user.user_id).then(function(result){
             reply(result);
         },function(error){
             if(error === 'not found'){
@@ -146,7 +146,7 @@ module.exports = {
         let user_id = request.params.user_id;
         let user = request.auth.credentials;
         let isAdmin = user.admin;
-        if(parseInt(user_id) != parseInt(user.id) && !isAdmin){
+        if(parseInt(user_id) != parseInt(user.user_id) && !isAdmin){
             reply(Boom.unauthorized("Only admin can update another user"));
         }
         service.changePassword(user_id,request.payload.oldPassword, request.payload.newPassword).then(function(){

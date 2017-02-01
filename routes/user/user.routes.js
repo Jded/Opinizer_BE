@@ -25,10 +25,12 @@ module.exports = [
         config:{
             validate: {
                 payload: {
+                    user_id:Joi.string().required(),
                     login:Joi.string().max(64).required(),
                     first_name: Joi.string().max(64),
                     last_name: Joi.string().max(64),
-                    email: Joi.string().email().required()
+                    email: Joi.string().email().required(),
+                    file_id: Joi.string().allow('')
                 }
             },
             handler: controller.updateUser

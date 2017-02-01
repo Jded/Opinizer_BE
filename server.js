@@ -62,7 +62,6 @@ server.register(CookieAuth, function (err) {
                 if (!cached) {
                     return callback(null, false);
                 }
-                console.log('WAT',cached.account)
                 return callback(null, true, cached.account);
             });
         }
@@ -72,7 +71,9 @@ server.register(CookieAuth, function (err) {
         require('./routes/session/session.routes.js'),
         require('./routes/user/user.routes.js'),
         require('./routes/item-template/item-template.routes.js'),
-        require('./routes/files/file.routes.js')
+        require('./routes/files/file.routes.js'),
+        require('./routes/item/item.routes.js'),
+        require('./routes/comment/comment.routes.js')
     )
     // Add the route
     server.route(routes);

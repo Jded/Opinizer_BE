@@ -71,7 +71,6 @@ module.exports = class CommentDataService{
                 *
                 FROM opinizer.comment_simple 
                 WHERE comment_simple.item_id = ${itemId}`, (err, result) => {
-                console.log(result)
                 if (err) reject(err);
                 resolve(result.rows);
             });
@@ -84,7 +83,6 @@ module.exports = class CommentDataService{
                 *
                 FROM opinizer.comment_simple 
                 WHERE comment_simple.user_id = ${userId}`, (err, result) => {
-                console.log(result)
                 if (err) reject(err);
                 resolve(result.rows);
             });
@@ -97,8 +95,7 @@ module.exports = class CommentDataService{
                 *
                 FROM opinizer.comment_simple 
                 GROUP BY item_instance.item_instance_id
-                LIMIT ${number} ORDER BY item_instance.creation_date DESC`, (err, result) => {
-                console.log(result)
+                ORDER BY item_instance.creation_date DESC LIMIT ${number}`, (err, result) => {
                 if (err) reject(err);
                 resolve(result.rows);
             });

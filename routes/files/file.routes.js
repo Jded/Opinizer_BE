@@ -7,9 +7,9 @@ module.exports = [
         path: '/file',
         config: {
             payload: {
+                maxBytes: 209715200,
                 output: 'stream',
-                parse: true,
-                allow: 'multipart/form-data'
+                parse: true
             },
             handler: controller.saveFile
         }

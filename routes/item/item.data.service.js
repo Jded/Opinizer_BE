@@ -166,7 +166,6 @@ module.exports = class ItemDataService{
                 LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_instance.file_id) 
                 WHERE item_instance.item_instance_id = '${itemInstanceId}' 
                 GROUP BY item_instance.item_instance_id`, (err, result) => {
-                console.log(result)
                 if (err) reject(err);
 
                 if(result.rows.length !== 1){
@@ -212,7 +211,6 @@ module.exports = class ItemDataService{
                 LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_instance.file_id) 
                 WHERE item_instance.item_template_id = '${itemTemplateId}' 
                 GROUP BY item_instance.item_instance_id`, (err, result) => {
-                console.log(result)
                 if (err) reject(err);
 
                 resolve(result.rows.map((row)=>this.processReadFields(row)));
@@ -229,11 +227,10 @@ module.exports = class ItemDataService{
                 FROM opinizer.item_instance AS item_instance 
                 LEFT JOIN opinizer.item_field_value AS item_field_value ON item_field_value.item_id = item_instance.item_instance_id 
                 LEFT JOIN opinizer.file AS file ON file.file_id = ANY(item_instance.file_id) 
-                WHERE item_instance.item_template_id = '${itemTemplateId}' 
                 GROUP BY item_instance.item_instance_id
-                LIMIT ${number} ORDER BY item_instance.creation_date DESC
+                ORDER BY item_instance.creation_date DESC LIMIT ${number}
                 `, (err, result) => {
-                console.log(result)
+                console.log(err)
                 if (err) reject(err);
 
                 resolve(result.rows.map((row)=>this.processReadFields(row)));

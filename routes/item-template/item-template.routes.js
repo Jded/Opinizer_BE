@@ -7,7 +7,7 @@ const field = Joi.object().keys({
     field_name:Joi.string().required(),
     field_type:Joi.number().required(),
     item_field_id:Joi.string(),
-    item_template_id:Joi.string().required(),
+    item_template_id:Joi.string(),
     creation_date:Joi.string()
 });
 
@@ -20,6 +20,22 @@ module.exports = [
             auth: { mode: 'try' },
         }
     },
+    {
+        path :'/item-template/recent/{number}',
+        method:'GET',
+        config:{
+            auth: { mode: 'try' },
+            handler: controller.getRecentTemplates
+        }
+    },
+    {
+        path :'/item-template/my',
+        method:'GET',
+        config:{
+            handler: controller.getMyTemplates
+        }
+    },
+
     {
         path :'/item-template/{item_template_id}',
         method:'GET',
@@ -35,7 +51,7 @@ module.exports = [
             validate: {
                 payload: {
                     template_name: Joi.string().min(2).max(128).required(),
-                    template_description: Joi.string().max(8192),
+                    template_description: Joi.string().max(8192).allow(""),
                     addFields:Joi.array().items(field),
                     file_id:Joi.array().items(Joi.string())
                 }

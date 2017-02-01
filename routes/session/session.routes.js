@@ -6,7 +6,6 @@ module.exports = [
         path :'/session',
         method:'GET',
         config:{
-            auth: { mode: 'try' },
             handler: controller.checkSession
         }
     },

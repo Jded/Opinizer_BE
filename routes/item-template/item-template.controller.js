@@ -12,6 +12,23 @@ module.exports = {
             reply(Boom.internal(err))
         })
     },
+    getRecentTemplates: function(request,reply){
+        const service = new ItemTemplateDataService(request.pg.client);
+        service.getRecent(request.params.number).then(function(result){
+            reply(result);
+        },function(err){
+            reply(Boom.internal(err))
+        })
+    },
+    getMyTemplates: function(request,reply){
+        const service = new ItemTemplateDataService(request.pg.client);
+        let user = request.auth.credentials;
+        service.getUserTemplates(user.user_id).then(function(result){
+            reply(result);
+        },function(err){
+            reply(Boom.internal(err))
+        })
+    },
     getTemplate: function(request,reply){
         const service = new ItemTemplateDataService(request.pg.client);
         if(request.params.item_template_id){

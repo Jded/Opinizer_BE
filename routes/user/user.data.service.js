@@ -90,12 +90,14 @@ module.exports = class UserDataService{
                 else if(result.rowCount !== 1){
                     reject("not found")
                 } else{
-                    resolve(result.rowCount);
+                    resolve(result.rows[0]);
                 }
             }
             this.client.query(
-                'UPDATE opinizer.user SET login = $1, email  $2, first_name = $3, last_name = $4) WHERE user_id = $5',
-                [user.login, user.email, user.first_name, user.last_name, user.user_id] , success);
+                `with upd as (UPDATE opinizer.user SET login = $1, email = $2, first_name = $3, last_name = $4, file_id = $5 WHERE user_id = $6 RETURNING *) 
+        SELECT upd.user_id, upd.login, upd.first_name, upd.last_name, upd.email, upd.admin_privilege, upd.confirmed, upd.registration_date, upd.file_id, file.address, file.filename
+        FROM upd LEFT JOIN opinizer.file as file ON upd.file_id = file.file_id`,
+                [user.login, user.email, user.first_name, user.last_name, user.file_id, user.user_id] , success);
         });
     }
 
